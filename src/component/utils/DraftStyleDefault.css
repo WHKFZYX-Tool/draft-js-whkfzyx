@@ -3,7 +3,7 @@
  * @permanent
  */
 
-.public/DraftStyleDefault/block {
+ .public/DraftStyleDefault/block {
   position: relative;
   white-space: pre-wrap;
 }
@@ -38,7 +38,7 @@
  */
 .public/DraftStyleDefault/ul,
 .public/DraftStyleDefault/ol {
-  margin: 16px 0;
+  margin: 0px 0;
   padding: 0;
 }
 
@@ -107,12 +107,30 @@
   position: relative;
 }
 
+/* 
 .public/DraftStyleDefault/unorderedListItem.public/DraftStyleDefault/depth0 {
   list-style-type: disc;
 }
 
 .public/DraftStyleDefault/unorderedListItem.public/DraftStyleDefault/depth1 {
   list-style-type: circle;
+}
+ */
+ 
+.public/DraftStyleDefault/unorderedListItem.public/DraftStyleDefault/disc{
+  list-style-type: disc;
+}
+
+.public/DraftStyleDefault/unorderedListItem.public/DraftStyleDefault/circle{
+  list-style-type: circle;
+}
+
+.public/DraftStyleDefault/unorderedListItem.public/DraftStyleDefault/square{
+  list-style-type: square;
+}
+
+.public/DraftStyleDefault/unorderedListItem.public/DraftStyleDefault/image{
+  list-style-image: url('');
 }
 
 /**
@@ -149,7 +167,7 @@
   content: counter(ol0) ". ";
   counter-increment: ol0;
 }
-
+/* 
 .public/DraftStyleDefault/orderedListItem.public/DraftStyleDefault/depth1:before {
   content: counter(ol1) ". ";
   counter-increment: ol1;
@@ -188,4 +206,32 @@
 
 .public/DraftStyleDefault/depth4.public/DraftStyleDefault/reset {
   counter-reset: ol4;
+}
+ */
+
+ .public/DraftStyleDefault/orderedListItem.public/DraftStyleDefault/decimaltype1:before {
+  content: counter(ol1) ". ";
+  counter-increment: ol1;
+}
+
+.public/DraftStyleDefault/orderedListItem.public/DraftStyleDefault/decimaltype2:before {
+  content: counter(ol2) "). ";
+  counter-increment: ol2;
+}
+
+.public/DraftStyleDefault/orderedListItem.public/DraftStyleDefault/decimaltype3:before {
+  content: "(" counter(ol3) "). ";
+  counter-increment: ol3;
+} 
+
+.public/DraftStyleDefault/decimaltype1.public/DraftStyleDefault/reset {
+  counter-reset: ol1;
+}
+
+.public/DraftStyleDefault/decimaltype2.public/DraftStyleDefault/reset {
+  counter-reset: ol2;
+}
+
+.public/DraftStyleDefault/decimaltype3.public/DraftStyleDefault/reset {
+  counter-reset: ol3;
 }

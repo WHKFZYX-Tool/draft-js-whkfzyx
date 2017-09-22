@@ -25,7 +25,14 @@ export type DraftBlockType = (
   'header-five' |
   'header-six' |
   'unordered-list-item' |
+  'unordered-list-item-disc' |
+  'unordered-list-item-circle' |
+  'unordered-list-item-square' |
+  'unordered-list-item-image' |
   'ordered-list-item' |
+  'ordered-list-item-decimal-type1' |
+  'ordered-list-item-decimal-type2' |
+  'ordered-list-item-decimal-type3' |
   'blockquote' |
   'code-block' |
   'atomic'

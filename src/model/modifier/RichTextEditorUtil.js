@@ -24,6 +24,7 @@ const SelectionState = require('SelectionState');
 
 const adjustBlockDepthForContentState = require('adjustBlockDepthForContentState');
 const nullthrows = require('nullthrows');
+const DraftBlockTypeAnalysis = require('DraftBlockTypeAnalysis');
 
 const RichTextEditorUtil = {
   currentBlockContainsLink: function(
@@ -207,6 +208,8 @@ const RichTextEditorUtil = {
     var content = editorState.getCurrentContent();
     var block = content.getBlockForKey(key);
     var type = block.getType();
+    //ul和ol的下拉按钮的type都转成ul与ol的type,保持跟ul和ol的操作不变
+    type = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(type);    
     if (type !== 'unordered-list-item' && type !== 'ordered-list-item') {
       return editorState;
     }
@@ -221,6 +224,8 @@ const RichTextEditorUtil = {
     }
 
     var typeAbove = blockAbove.getType();
+    //ul和ol的下拉按钮的type都转成ul与ol的type,保持跟ul和ol的操作不变
+    typeAbove = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(typeAbove);    
     if (
       typeAbove !== 'unordered-list-item' &&
       typeAbove !== 'ordered-list-item'

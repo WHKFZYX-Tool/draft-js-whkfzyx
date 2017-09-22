@@ -46,10 +46,38 @@ const DefaultDraftBlockRenderMap: DraftBlockRenderMap = Map({
     element: 'li',
     wrapper: UL_WRAP,
   },
+  'unordered-list-item-disc': {
+    element: 'li',
+    wrapper: UL_WRAP,
+  },
+  'unordered-list-item-circle': {
+    element: 'li',
+    wrapper: UL_WRAP,
+  },
+  'unordered-list-item-square': {
+    element: 'li',
+    wrapper: UL_WRAP,
+  },
+  'unordered-list-item-image': {
+    element: 'li',
+    wrapper: UL_WRAP,
+  },        
   'ordered-list-item': {
     element: 'li',
     wrapper: OL_WRAP,
   },
+  'ordered-list-item-decimal-type1': {
+    element: 'li',
+    wrapper: OL_WRAP,
+  },
+  'ordered-list-item-decimal-type2': {
+    element: 'li',
+    wrapper: OL_WRAP,
+  },
+  'ordered-list-item-decimal-type3': {
+    element: 'li',
+    wrapper: OL_WRAP,
+  },       
   'blockquote': {
     element: 'blockquote',
   },

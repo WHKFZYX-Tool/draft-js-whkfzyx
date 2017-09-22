@@ -24,6 +24,7 @@ const React = require('React');
 const cx = require('cx');
 const joinClasses = require('joinClasses');
 const nullthrows = require('nullthrows');
+const DraftBlockTypeAnalysis = require('DraftBlockTypeAnalysis');
 
 type Props = {
   blockRendererFn: Function,
@@ -123,10 +124,18 @@ class DraftEditorContents extends React.Component<Props> {
     let currentDepth = null;
     let lastWrapperTemplate = null;
 
+    let currentBlock = 0;   //当前Block的计数（第n个Block）
+    let maxLiDepth = 0;   //最大<li>的depth，用于控制层级
+    let previousBlockLastDepth = null;    //上一个有序或无序Block的层级Depth，用于控制混编
+    let currentBlockDepth = null;   //当前Block的层级Depth
+    let previousBlockDepth = null;  //上一个Block的层级Depth
+    let currentBlockStyleNum = 0;   //当前有序和无序列表样式层级数    
+
     for (let ii = 0; ii < blocksAsArray.length; ii++) {
       const block = blocksAsArray[ii];
       const key = block.getKey();
-      const blockType = block.getType();
+      const blockType = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(block.getType());
+      const realBlockType = block.getType();    //当前真正的BlockType，用于处理有序和无序列表的其他样式。
 
       const customRenderer = blockRendererFn(block);
       let CustomComponent, customProps, customEditable;
@@ -167,9 +176,53 @@ class DraftEditorContents extends React.Component<Props> {
       const depth = block.getDepth();
       let className = this.props.blockStyleFn(block);
 
+      //获取上一个Block和BlockType
+      let previousBlock = getPreviousBlock(blocksAsArray,currentBlock);
+      let previousBlockType =  null;
+      let realPreviousBlockType = null;
+      if(previousBlock){
+        previousBlockType = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(previousBlock.getType()); 
+        realPreviousBlockType = previousBlock.getType();
+      }   
+      //如果上一个Block不属于序列 && 当前Block属于序列，就设置为一个新的序列树。
+      if(!canHaveDepth(previousBlockType) && canHaveDepth(blockType)){        
+        maxLiDepth = 0;
+        previousBlockLastDepth = null;
+        currentBlockDepth = null;   
+        previousBlockDepth = null;     
+      }
+
+      currentBlockDepth = depth;
+      //如果当前Block和上一个Block都是序列 && BlockType不同，就记录上一层级的Depth
+      if(canHaveDepth(blockType) && canHaveDepth(previousBlockType) && blockType !== previousBlockType) {
+        previousBlockLastDepth = maxLiDepth;
+      }    
+      //获取当前Block的层级，上一层的层级数+当前depth>当前层级数，就赋值上一层的层级数+depth为当前层级，最大层级数为4。解决有序和无序列表混编  
+      if (previousBlockLastDepth !== null && previousBlockLastDepth + depth > currentBlockDepth) {
+          currentBlockDepth = (previousBlockLastDepth + depth) > 4 ? 4 : (previousBlockLastDepth + depth);  
+      }      
+
       // List items are special snowflakes, since we handle nesting and
       // counters manually.
       if (Element === 'li') {
+        //获取当前最大层级数
+        if(currentBlockDepth > maxLiDepth){
+          maxLiDepth = currentBlockDepth;
+        }
+        
+        //如果当层与上层的BlockType不同，样式就开始重新计数。相同则判断是否在同一层，如果不在同一层就+1
+        if(realBlockType !== realPreviousBlockType){
+          currentBlockStyleNum = getBlockStyleNum(realBlockType);
+        }else{
+          if(previousBlockDepth !== null && previousBlockDepth !== currentBlockDepth){
+              currentBlockStyleNum += 1;            
+          } 
+        }   
+        
+        const olulType = blockType === 'unordered-list-item' 
+        ? DraftBlockTypeAnalysis.getUlStyleType(currentBlockStyleNum) 
+        : DraftBlockTypeAnalysis.getOlStyleType(currentBlockStyleNum);
+
         const shouldResetCount = (
           lastWrapperTemplate !== wrapperTemplate ||
           currentDepth === null ||
@@ -177,7 +230,7 @@ class DraftEditorContents extends React.Component<Props> {
         );
         className = joinClasses(
           className,
-          getListItemClasses(blockType, depth, shouldResetCount, direction),
+          getListItemClasses(blockType, currentBlockDepth, shouldResetCount, direction,olulType),
         );
       }
 
@@ -223,6 +276,9 @@ class DraftEditorContents extends React.Component<Props> {
       } else {
         currentDepth = null;
       }
+
+      previousBlockDepth = currentBlockDepth;
+      currentBlock += 1;      
       lastWrapperTemplate = wrapperTemplate;
     }
 
@@ -269,7 +325,11 @@ function getListItemClasses(
   depth: number,
   shouldResetCount: boolean,
   direction: BidiDirection,
+  olulType: string,
 ): string {
+  //ul和ol的下拉按钮的type都转成ul与ol的type,保持跟ul和ol的操作不变
+  type = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(type);  
+
   return cx({
     'public/DraftStyleDefault/unorderedListItem':
       type === 'unordered-list-item',
@@ -283,7 +343,52 @@ function getListItemClasses(
     'public/DraftStyleDefault/depth4': depth === 4,
     'public/DraftStyleDefault/listLTR': direction === 'LTR',
     'public/DraftStyleDefault/listRTL': direction === 'RTL',
+    'public/DraftStyleDefault/disc': olulType === 'disc',
+    'public/DraftStyleDefault/circle': olulType === 'circle',
+    'public/DraftStyleDefault/square': olulType === 'square',
+    'public/DraftStyleDefault/image': olulType === 'image',
+    'public/DraftStyleDefault/decimaltype1': olulType === 'decimalType1',
+    'public/DraftStyleDefault/decimaltype2': olulType === 'decimalType2',
+    'public/DraftStyleDefault/decimaltype3': olulType === 'decimalType3',
   });
+}
+
+function getPreviousBlock(blocksAsArray,currentBlock) {
+  return blocksAsArray[currentBlock - 1]
+}
+
+function canHaveDepth(blockType: string): boolean {
+  //ul和ol的下拉按钮的type都转成ul与ol的type,保持跟ul和ol的操作不变
+  blockType = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(blockType);  
+
+  switch (blockType) {
+    case 'unordered-list-item':
+    case 'ordered-list-item':
+      return true;
+    default:
+      return false;
+  }
+}
+
+function getBlockStyleNum(blockType: string): number {
+  switch (blockType) {
+    case 'unordered-list-item-disc':
+      return 0;
+    case 'unordered-list-item-circle':
+      return 1;
+    case 'unordered-list-item-square':
+      return 2;
+    case 'unordered-list-item-image':
+      return 3;
+    case 'ordered-list-item-decimal-type1':
+      return 0;
+    case 'ordered-list-item-decimal-type2':
+      return 1;
+    case 'ordered-list-item-decimal-type3':
+      return 2;
+    default:
+      return 0;
+  }
 }
 
 module.exports = DraftEditorContents;
