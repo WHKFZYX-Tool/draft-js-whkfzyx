@@ -175,7 +175,7 @@ class DraftEditorContents extends React.Component<Props> {
 
       const depth = block.getDepth();
       let className = this.props.blockStyleFn(block);
-
+      let receiveClassName = getReceiveClass(block);
       //获取上一个Block和BlockType
       let previousBlock = getPreviousBlock(blocksAsArray,currentBlock);
       let previousBlockType =  null;
@@ -230,7 +230,7 @@ class DraftEditorContents extends React.Component<Props> {
         );
         className = joinClasses(
           className,
-          getListItemClasses(blockType, currentBlockDepth, shouldResetCount, direction,olulType),
+          receiveClassName !== ""?receiveClassName:getListItemClasses(blockType, currentBlockDepth, shouldResetCount, direction,olulType),
         );
       }
 
@@ -389,6 +389,17 @@ function getBlockStyleNum(blockType: string): number {
     default:
       return 0;
   }
+}
+
+function getReceiveClass(block) {
+  let data = block.getData();
+
+  let mergedStyle="";
+  
+  if (data.has("class")) {
+    mergedStyle=data.get("class");
+  } 
+  return mergedStyle;
 }
 
 module.exports = DraftEditorContents;
