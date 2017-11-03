@@ -126,8 +126,6 @@ class DraftEditorContents extends React.Component<Props> {
 
     let currentBlock = 0;   //当前Block的计数（第n个Block）
     let maxLiDepth = 0;   //最大<li>的depth，用于控制层级
-    let previousBlockLastDepth = null;    //上一个有序或无序Block的层级Depth，用于控制混编
-    let currentBlockDepth = null;   //当前Block的层级Depth
     let previousBlockDepth = null;  //上一个Block的层级Depth
     let currentBlockStyleNum = 0;   //当前有序和无序列表样式层级数    
 
@@ -187,34 +185,22 @@ class DraftEditorContents extends React.Component<Props> {
       //如果上一个Block不属于序列 && 当前Block属于序列，就设置为一个新的序列树。
       if(!canHaveDepth(previousBlockType) && canHaveDepth(blockType)){        
         maxLiDepth = 0;
-        previousBlockLastDepth = null;
-        currentBlockDepth = null;   
         previousBlockDepth = null;     
       }
-
-      currentBlockDepth = depth;
-      //如果当前Block和上一个Block都是序列 && BlockType不同，就记录上一层级的Depth
-      if(canHaveDepth(blockType) && canHaveDepth(previousBlockType) && blockType !== previousBlockType) {
-        previousBlockLastDepth = maxLiDepth;
-      }    
-      //获取当前Block的层级，上一层的层级数+当前depth>当前层级数，就赋值上一层的层级数+depth为当前层级，最大层级数为4。解决有序和无序列表混编  
-      if (previousBlockLastDepth !== null && previousBlockLastDepth + depth > currentBlockDepth) {
-          currentBlockDepth = (previousBlockLastDepth + depth) > 4 ? 4 : (previousBlockLastDepth + depth);  
-      }      
 
       // List items are special snowflakes, since we handle nesting and
       // counters manually.
       if (Element === 'li') {
         //获取当前最大层级数
-        if(currentBlockDepth > maxLiDepth){
-          maxLiDepth = currentBlockDepth;
+        if(depth > maxLiDepth){
+          maxLiDepth = depth;
         }
         
         //如果当层与上层的BlockType不同，样式就开始重新计数。相同则判断是否在同一层，如果不在同一层就+1
         if(realBlockType !== realPreviousBlockType){
           currentBlockStyleNum = getBlockStyleNum(realBlockType);
         }else{
-          if(previousBlockDepth !== null && previousBlockDepth !== currentBlockDepth){
+          if(previousBlockDepth !== null && previousBlockDepth !== depth){
               currentBlockStyleNum += 1;            
           } 
         }   
@@ -230,7 +216,7 @@ class DraftEditorContents extends React.Component<Props> {
         );
         className = joinClasses(
           className,
-          receiveClassName !== ""?receiveClassName:getListItemClasses(blockType, currentBlockDepth, shouldResetCount, direction,olulType),
+          receiveClassName !== ""?receiveClassName:getListItemClasses(blockType, depth, shouldResetCount, direction,olulType),
         );
       }
 
@@ -277,7 +263,7 @@ class DraftEditorContents extends React.Component<Props> {
         currentDepth = null;
       }
 
-      previousBlockDepth = currentBlockDepth;
+      previousBlockDepth = depth;
       currentBlock += 1;      
       lastWrapperTemplate = wrapperTemplate;
     }

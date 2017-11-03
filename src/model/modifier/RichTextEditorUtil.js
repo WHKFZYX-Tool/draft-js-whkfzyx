@@ -294,11 +294,52 @@ const RichTextEditorUtil = {
       'unstyled' :
       blockType;
 
-    return EditorState.push(
+    var returnEditorState = EditorState.push(
       editorState,
       DraftModifier.setBlockType(content, target, typeToSet),
       'change-block-type',
     );
+
+    var content = editorState.getCurrentContent();
+    var key = selection.getAnchorKey();
+    var maxDepth = 4;
+    //当前block
+    var block = content.getBlockForKey(key);
+    var type = block.getType();
+    type = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(type);    
+    var depth = block.getDepth();
+    if (type !== 'unordered-list-item' && type !== 'ordered-list-item') {
+      return returnEditorState;
+    }    
+    //上一个block
+    var blockAbove = content.getBlockBefore(key);
+    var typeAbove = blockAbove.getType();
+    typeAbove = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(typeAbove);    
+    var depthAbove = blockAbove.getDepth();
+    if (!blockAbove) {
+      return returnEditorState;
+    }
+    if (typeAbove !== 'unordered-list-item' && typeAbove !== 'ordered-list-item'
+    ) {
+      return returnEditorState;
+    }  
+    
+    if (depth === maxDepth) {
+      return returnEditorState;
+    } 
+    
+    var withAdjustment = adjustBlockDepthForContentState(
+      returnEditorState.getCurrentContent(),
+      returnEditorState.getSelection(),
+      Math.max(depthAbove,depth),
+      maxDepth,
+    );
+
+    return EditorState.push(
+      returnEditorState,
+      withAdjustment,
+      'adjust-depth',
+    );        
   },
 
   toggleCode: function(editorState: EditorState): EditorState {
