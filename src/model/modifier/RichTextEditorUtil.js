@@ -205,16 +205,26 @@ const RichTextEditorUtil = {
       return editorState;
     }
 
+    event.preventDefault();
+    
     var content = editorState.getCurrentContent();
     var block = content.getBlockForKey(key);
     var type = block.getType();
     //ul和ol的下拉按钮的type都转成ul与ol的type,保持跟ul和ol的操作不变
     type = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(type);    
     if (type !== 'unordered-list-item' && type !== 'ordered-list-item') {
-      return editorState;
-    }
-
-    event.preventDefault();
+      // Insert a \t into the editor.
+      const newContentState = DraftModifier.replaceText(
+        editorState.getCurrentContent(),
+        editorState.getSelection(),
+        '\u0009',
+      );
+      return EditorState.push(
+        editorState,
+        newContentState,
+        'insert-characters',
+      );
+    }    
 
     // Only allow indenting one level beyond the block above, and only if
     // the block above is a list item as well.

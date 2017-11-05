@@ -19,7 +19,7 @@
   "main": "lib/Draft.js",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/WHKFZYX-Tool/draft-js-whkfzyx.git"      
+    "url": "git+ssh://git@github.com/WHKFZYX-Tool/draft-js-whkfzyx.git"
   },
   "license": "BSD-3-Clause",
   "scripts": {

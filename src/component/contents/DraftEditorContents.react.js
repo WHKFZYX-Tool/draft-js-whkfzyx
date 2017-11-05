@@ -125,7 +125,6 @@ class DraftEditorContents extends React.Component<Props> {
     let lastWrapperTemplate = null;
 
     let currentBlock = 0;   //当前Block的计数（第n个Block）
-    let maxLiDepth = 0;   //最大<li>的depth，用于控制层级
     let previousBlockDepth = null;  //上一个Block的层级Depth
     let currentBlockStyleNum = 0;   //当前有序和无序列表样式层级数    
 
@@ -175,27 +174,22 @@ class DraftEditorContents extends React.Component<Props> {
       let className = this.props.blockStyleFn(block);
       let receiveClassName = getReceiveClass(block);
       //获取上一个Block和BlockType
-      let previousBlock = getPreviousBlock(blocksAsArray,currentBlock);
-      let previousBlockType =  null;
+      let previousBlock = getPreviousBlock(blocksAsArray,currentBlock);      
       let realPreviousBlockType = null;
-      if(previousBlock){
-        previousBlockType = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(previousBlock.getType()); 
+      let previousBlockType =  null;
+      if(previousBlock){        
         realPreviousBlockType = previousBlock.getType();
+        previousBlockType = DraftBlockTypeAnalysis.getDraftBlockTypeAnalysis(realPreviousBlockType); 
       }   
       //如果上一个Block不属于序列 && 当前Block属于序列，就设置为一个新的序列树。
-      if(!canHaveDepth(previousBlockType) && canHaveDepth(blockType)){        
-        maxLiDepth = 0;
-        previousBlockDepth = null;     
+      if(depth === 0 || (!canHaveDepth(previousBlockType) && canHaveDepth(blockType))){        
+        previousBlockDepth = null; 
+        currentBlockStyleNum = depth;    
       }
 
       // List items are special snowflakes, since we handle nesting and
       // counters manually.
       if (Element === 'li') {
-        //获取当前最大层级数
-        if(depth > maxLiDepth){
-          maxLiDepth = depth;
-        }
-        
         //如果当层与上层的BlockType不同，样式就开始重新计数。相同则判断是否在同一层，如果不在同一层就+1
         if(realBlockType !== realPreviousBlockType){
           currentBlockStyleNum = getBlockStyleNum(realBlockType);
