@@ -37,6 +37,7 @@ const convertFromRawToDraftState = require('convertFromRawToDraftState');
 const generateRandomKey = require('generateRandomKey');
 const getDefaultKeyBinding = require('getDefaultKeyBinding');
 const getVisibleSelectionRect = require('getVisibleSelectionRect');
+const convertFromDraftStateToPduState = require('convertFromDraftStateToPduState');
 
 const DraftPublic = {
   Editor: DraftEditor,
@@ -67,6 +68,7 @@ const DraftPublic = {
   genKey: generateRandomKey,
   getDefaultKeyBinding,
   getVisibleSelectionRect,
+  convertToPduRaw: convertFromDraftStateToPduState,
 };
 
 module.exports = DraftPublic;
